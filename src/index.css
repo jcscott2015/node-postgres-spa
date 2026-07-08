@@ -1,0 +1,175 @@
+:root {
+  color-scheme: light;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #0f172a;
+  background: #f8fafc;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+#root {
+  min-height: 100vh;
+}
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  background: #0f172a;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.nav-links {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.nav-links a,
+.nav-links button {
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  padding: 0.45rem 0.7rem;
+  border-radius: 999px;
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+}
+.content {
+  padding: 2rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+.card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+}
+.form-grid {
+  display: grid;
+  gap: 0.9rem;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.field input {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.7rem 0.8rem;
+}
+.field input:focus {
+  outline: 2px solid #38bdf8;
+  outline-offset: 1px;
+}
+.error-text {
+  color: #dc2626;
+  font-size: 0.9rem;
+}
+.helper {
+  color: #475569;
+  font-size: 0.95rem;
+}
+.row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+button.primary {
+  background: #2563eb;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+}
+button.secondary {
+  background: #e2e8f0;
+  color: #0f172a;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+}
+button.danger {
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+}
+.list {
+  display: grid;
+  gap: 0.75rem;
+}
+.list-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.banner {
+  background: #0f172a;
+  color: white;
+  padding: 0.85rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+.banner strong {
+  margin-right: 0.4rem;
+}
+.empty-state {
+  color: #64748b;
+  padding: 1rem 0;
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: black;
+  font-size: 0.9rem;
+  text-align: center;
+  white-space: nowrap;
+}

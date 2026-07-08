@@ -1,0 +1,43 @@
+graph TD
+    %% Define Styles
+    classDef ui fill:#E1F5FE,stroke:#0288D1,stroke-width:2px,color:#000;
+    classDef bff fill:#EDE7F6,stroke:#5E35B1,stroke-width:2px,color:#000;
+    classDef cache fill:#FFE0B2,stroke:#F57C00,stroke-width:2px,color:#000;
+    classDef service fill:#E8F5E9,stroke:#388E3C,stroke-width:2px,color:#000;
+    classDef db fill:#FFF9C4,stroke:#FBC02D,stroke-width:2px,color:#000;
+    classDef legacy fill:#FFEBEE,stroke:#D32F2F,stroke-width:2px,color:#000;
+
+    %% Elements
+    UI["Clinician UI <br> (React / TS + IndexedDB)"]:::ui
+    BFF["API Gateway / BFF Layer <br> (Node.js / .NET Core)"]:::bff
+    Redis[("Cache Cluster <br> (Redis)")]:::cache
+    Orch["Orchestration / Microservices"]:::service
+    Postgres[("Operational DB <br> (PostgreSQL)")]:::db
+    Mirth["Integration Engine <br> (Mirth Connect / Kafka)"]:::legacy
+    Epic["EHR System <br> (Epic / Cerner)"]:::legacy
+
+    %% Connections and Flows
+    UI <-->|WebSockets / SSE <br> Real-time Alerts| BFF
+    BFF <-->|Read-optimized Active Patient Views| Redis
+    BFF -->|Request Orchestration| Orch
+    Orch <-->|ACID Patient Metadata| Postgres
+    Orch <-->|Internal Interoperability| Mirth
+    Mirth <-->|Event-driven Webhooks <br> HL7 v2 / FHIR APIs| Epic
+
+    %% Subgraph Layouts
+    subgraph Security_Layer ["Security & Compliance Layer (TLS 1.3 / AES-256 / OAuth2)"]
+        UI
+        BFF
+        Orch
+    end
+
+    subgraph Data_Storage ["Data Tier"]
+        Redis
+        Postgres
+    end
+
+    subgraph Legacy_Tier ["Legacy System Tier"]
+        Mirth
+        Epic
+    end
+    

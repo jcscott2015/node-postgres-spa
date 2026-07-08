@@ -1,0 +1,20 @@
+```mermaid
+erDiagram
+    CUSTOMER ||--o{ ORDER : places
+    ORDER ||--|{ LINE-ITEM : contains
+    CUSTOMER {
+        string id PK
+        string name
+        string email
+    }
+    ORDER {
+        int id PK
+        date order_date
+        string status
+    }
+    LINE-ITEM {
+        int id PK
+        int quantity
+        float price
+    }
+```

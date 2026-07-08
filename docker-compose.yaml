@@ -1,0 +1,30 @@
+services:
+  react_ui:
+    container_name: react_ui
+    build:
+      context: . # Points to the current folder where the UI code lives
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      # Directs the browser to your laptop's port 5000
+      - VITE_API_URL=http://localhost:5000
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:3000"]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/node_modules/.pnpm
+    # This extra setting allows the container to talk to your laptop's local ports
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - frontend_link
+
+networks:
+  frontend_link:
+    external: true
+    name: oauth_shared_bridge
