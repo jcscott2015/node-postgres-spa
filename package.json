@@ -1,5 +1,5 @@
 {
-  "name": "node-postgres-react",
+  "name": "node-postgres-spa",
   "version": "1.0.0",
   "type": "module",
   "description": "OAuth2 React UI with RTK Query and websocket support",

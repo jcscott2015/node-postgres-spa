@@ -1,4 +1,4 @@
-# node-postgres-react
+# node-postgres-spa
 
 OAuth2-protected React UI for managing user records, with real-time WebSocket updates.
 

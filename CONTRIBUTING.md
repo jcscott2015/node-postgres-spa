@@ -18,7 +18,7 @@ We use pnpm for package management. The React app proxies API and WebSocket traf
 
 ```bash
 git clone https://github.com
-cd node-postgres-react
+cd node-postgres-spa
 pnpm install
 ```
 
