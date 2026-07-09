@@ -1,5 +1,11 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import type { RootState } from "@/app/store";
+import {
+  createApi,
+  fetchBaseQuery,
+  type BaseQueryFn,
+  type FetchArgs,
+  type FetchBaseQueryError,
+} from "@reduxjs/toolkit/query/react";
+import { clearAuth } from "@/app/authSlice";
 
 export interface UserRecord {
   id: string;
@@ -18,24 +24,39 @@ interface TokenResponse {
   accessToken?: string;
 }
 
-const baseQuery = fetchBaseQuery({
+const rawBaseQuery = fetchBaseQuery({
   baseUrl:
     typeof window !== "undefined" && window.location.origin
       ? `${window.location.origin}/`
       : "http://localhost/",
-  prepareHeaders: (headers, { getState }) => {
-    const token = (getState() as RootState).auth.token;
-    if (token) {
-      headers.set("authorization", `Bearer ${token}`);
-    }
-    return headers;
-  },
+  credentials: "include",
 });
+
+const baseQuery: BaseQueryFn<
+  string | FetchArgs,
+  unknown,
+  FetchBaseQueryError
+> = async (args, api, extraOptions) => {
+  const result = await rawBaseQuery(args, api, extraOptions);
+
+  if (
+    result.error &&
+    typeof result.error.status === "number" &&
+    [401, 403].includes(result.error.status)
+  ) {
+    api.dispatch(clearAuth());
+  }
+
+  return result;
+};
 
 export const authApi = createApi({
   reducerPath: "authApi",
   baseQuery,
   endpoints: (builder) => ({
+    session: builder.query<void, void>({
+      query: () => ({ url: "/oauth/session", method: "GET" }),
+    }),
     login: builder.mutation<
       TokenResponse,
       { username: string; password: string }
@@ -106,6 +127,7 @@ export const usersApi = createApi({
 });
 
 export const { useLoginMutation, useLogoutMutation } = authApi;
+export const { useSessionQuery } = authApi;
 export const {
   useGetUsersQuery,
   useGetUserByIdQuery,

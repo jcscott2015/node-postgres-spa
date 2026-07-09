@@ -22,6 +22,7 @@ export function CallbackPage() {
       try {
         const response = await fetch("/oauth/callback", {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ code, state }),
         });
@@ -30,18 +31,7 @@ export function CallbackPage() {
           throw new Error("Failed to exchange code for token.");
         }
 
-        const data = (await response.json()) as {
-          access_token?: string;
-          token?: string;
-          accessToken?: string;
-        };
-        const token = data.access_token || data.token || data.accessToken;
-
-        if (!token) {
-          throw new Error("No token in response.");
-        }
-
-        dispatch(setAuth({ token, username: "oauth-user" }));
+        dispatch(setAuth({ username: "oauth-user" }));
         navigate("/users", { replace: true });
       } catch (err) {
         dispatch(

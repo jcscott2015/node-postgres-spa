@@ -29,10 +29,10 @@ describe("OAuth callback flow", () => {
     const data = (await response.json()) as { access_token: string };
     expect(data.access_token).toBe(mockToken);
 
-    store.dispatch(setAuth({ token: mockToken, username: "oauth-user" }));
+    store.dispatch(setAuth({ username: "oauth-user" }));
 
     const state = store.getState();
-    expect(state.auth.token).toBe(mockToken);
+    expect(state.auth.status).toBe("authenticated");
     expect(state.auth.username).toBe("oauth-user");
   });
 

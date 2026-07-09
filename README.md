@@ -8,10 +8,10 @@ Built with React 19, Vite, Redux Toolkit + RTK Query, React Hook Form + Zod, and
 
 ## Features
 
-- OAuth2 login via `client_credentials` grant (form-encoded `POST /oauth/token`)
-- OAuth callback route (`/callback`) for authorization code exchange flows
-- All API requests include a Bearer token header via RTK Query
-- Real-time push notifications over WebSocket, authenticated via `Sec-WebSocket-Protocol` subprotocol header
+- OAuth2 login via `client_credentials` grant and an OAuth callback route (`/callback`) for authorization code exchange flows
+- Authenticated browser sessions backed by `HttpOnly` + `Secure` cookies, checked on app startup
+- All API requests include cookies via RTK Query
+- Real-time push notifications over WebSocket, authenticated by the browser session cookie
 - Full user CRUD: list, create, edit, delete
 - Protected routes — unauthenticated users are redirected to `/login`
 - Form validation with React Hook Form and Zod schemas
@@ -35,14 +35,14 @@ Built with React 19, Vite, Redux Toolkit + RTK Query, React Hook Form + Zod, and
 
 ## Routes
 
-| Path              | Description                              | Auth required |
-| ----------------- | ---------------------------------------- | ------------- |
-| `/login`          | OAuth2 login form                        | No            |
-| `/callback`       | Authorization code exchange with spinner | No            |
-| `/logout`         | Clears token and redirects to `/login`   | No            |
-| `/users`          | List all users                           | Yes           |
-| `/users/new`      | Create a user                            | Yes           |
-| `/users/:id/edit` | Edit a user                              | Yes           |
+| Path              | Description                                  | Auth required |
+| ----------------- | -------------------------------------------- | ------------- |
+| `/login`          | OAuth2 login form                            | No            |
+| `/callback`       | Authorization code exchange with spinner     | No            |
+| `/logout`         | Clears the session and redirects to `/login` | No            |
+| `/users`          | List all users                               | Yes           |
+| `/users/new`      | Create a user                                | Yes           |
+| `/users/:id/edit` | Edit a user                                  | Yes           |
 
 ---
 
@@ -126,10 +126,11 @@ src/
 
 1. User submits credentials on `/login`
 2. UI posts `grant_type=client_credentials` to `POST /oauth/token` (form-encoded)
-3. Token is stored in Redux state and `localStorage`
-4. All subsequent API requests include `Authorization: Bearer <token>`
-5. WebSocket connects using `["access_token", token]` as the subprotocol
-6. Logout dispatches `clearAuth`, wipes `localStorage`, calls `POST /oauth/logout`, and redirects to `/login`
+3. The backend sets an `HttpOnly` session cookie and the UI marks the session authenticated in Redux
+4. On refresh, the app checks the cookie-backed session before rendering protected routes
+5. All subsequent API requests include cookies automatically
+6. WebSocket connects using the browser session cookie
+7. Logout dispatches `clearAuth`, calls `POST /oauth/logout`, and redirects to `/login`
 
 ---
 
@@ -139,7 +140,7 @@ src/
 pnpm test
 ```
 
-Tests cover OAuth token exchange format, auth slice actions, WebSocket subprotocol authentication, logout flow, and the callback code exchange.
+Tests cover OAuth token exchange format, session checking, auth slice actions, WebSocket connection setup, logout flow, and the callback code exchange.
 
 ---
 

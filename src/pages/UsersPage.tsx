@@ -48,9 +48,6 @@ export function UsersPage() {
           >
             Add user
           </Link>
-          {/* <button className="secondary" onClick={handleLogout}>
-            Logout
-          </button> */}
         </div>
       </div>
 

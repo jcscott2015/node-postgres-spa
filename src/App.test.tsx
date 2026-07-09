@@ -30,15 +30,12 @@ const WebSocketMock = class {
 vi.stubGlobal("WebSocket", WebSocketMock as unknown as typeof WebSocket);
 
 describe("App websocket connection", () => {
-  it("opens a websocket using the auth token subprotocol", () => {
-    const socket = createSocketConnection("test-token", "localhost", "ws");
+  it("opens a websocket using cookie auth", () => {
+    const socket = createSocketConnection("localhost", "ws");
 
     expect(WebSocketMock.instances).toHaveLength(1);
     expect(WebSocketMock.instances[0]?.url).toBe("ws://localhost/ws");
-    expect(WebSocketMock.instances[0]?.protocols).toEqual([
-      "access_token",
-      "test-token",
-    ]);
+    expect(WebSocketMock.instances[0]?.protocols).toBeUndefined();
     expect(socket).toBeInstanceOf(WebSocket);
   });
 });

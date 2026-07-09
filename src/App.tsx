@@ -21,8 +21,10 @@ import { LoginPage } from "@/pages/LoginPage";
 import { CallbackPage } from "@/pages/CallbackPage";
 import { UserFormPage } from "@/pages/UserFormPage";
 import { UsersPage } from "@/pages/UsersPage";
+import { useSessionQuery } from "@/app/api";
 import { createSocketConnection } from "@/app/websocketClient";
 import { performLogout } from "@/app/logout";
+import { clearAuth, setAuth } from "@/app/authSlice";
 
 function LogoutRoute({
   dispatch,
@@ -40,11 +42,29 @@ function LogoutRoute({
 export function App() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const token = useSelector((state: RootState) => state.auth.token);
+  const authStatus = useSelector((state: RootState) => state.auth.status);
+  const username = useSelector((state: RootState) => state.auth.username);
   const location = useLocation();
+  const { isSuccess, isError } = useSessionQuery(undefined, {
+    skip: authStatus === "unauthenticated",
+    pollingInterval: authStatus === "authenticated" ? 60000 : 0,
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
 
   useEffect(() => {
-    if (!token) {
+    if (authStatus === "checking" && isSuccess) {
+      dispatch(setAuth({ username }));
+      return;
+    }
+
+    if (authStatus === "checking" && isError) {
+      dispatch(clearAuth());
+    }
+  }, [authStatus, dispatch, isError, isSuccess, username]);
+
+  useEffect(() => {
+    if (authStatus !== "authenticated") {
       dispatch(setWebSocketStatus("idle"));
       return;
     }
@@ -56,7 +76,7 @@ export function App() {
 
     dispatch(setWebSocketStatus("connecting"));
 
-    const socket = createSocketConnection(token, host, protocol);
+    const socket = createSocketConnection(host, protocol);
 
     socket.onopen = () => dispatch(setWebSocketStatus("open"));
 
@@ -71,7 +91,7 @@ export function App() {
       socket.close();
       dispatch(setWebSocketStatus("idle"));
     };
-  }, [dispatch, token]);
+  }, [dispatch, authStatus]);
 
   return (
     <div className="app-shell">
@@ -79,13 +99,19 @@ export function App() {
         <div>
           <strong>OAuth user manager</strong>
           <div className="helper">
-            Token-based access for login, users, and websocket updates
+            Cookie-based access for login, users, and websocket updates
           </div>
         </div>
         <nav className="nav-links">
-          {token ? <Link to="/users">List users</Link> : null}
-          {token ? <Link to="/users/new">Add user</Link> : null}
-          {token ? <Link to="/logout">Logout</Link> : null}
+          {authStatus === "authenticated" ? (
+            <Link to="/users">List users</Link>
+          ) : null}
+          {authStatus === "authenticated" ? (
+            <Link to="/users/new">Add user</Link>
+          ) : null}
+          {authStatus === "authenticated" ? (
+            <Link to="/logout">Logout</Link>
+          ) : null}
         </nav>
       </div>
       {location.pathname !== "/login" ? <NotificationBanner /> : null}
@@ -104,7 +130,12 @@ export function App() {
           </Route>
           <Route
             path="*"
-            element={<Navigate to={token ? "/users" : "/login"} replace />}
+            element={
+              <Navigate
+                to={authStatus === "authenticated" ? "/users" : "/login"}
+                replace
+              />
+            }
           />
         </Routes>
       </main>

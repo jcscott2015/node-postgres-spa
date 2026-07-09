@@ -1,20 +1,14 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface AuthState {
-  token: string | null;
+  status: "checking" | "authenticated" | "unauthenticated";
   username: string | null;
   error: string | null;
 }
 
 const initialState: AuthState = {
-  token:
-    typeof window !== "undefined"
-      ? window.localStorage.getItem("auth-token")
-      : null,
-  username:
-    typeof window !== "undefined"
-      ? window.localStorage.getItem("auth-username")
-      : null,
+  status: "checking",
+  username: null,
   error: null,
 };
 
@@ -22,23 +16,19 @@ const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
-    setAuth(state, action: PayloadAction<{ token: string; username: string }>) {
-      state.token = action.payload.token;
+    setAuth(state, action: PayloadAction<{ username: string | null }>) {
+      state.status = "authenticated";
       state.username = action.payload.username;
       state.error = null;
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("auth-token", action.payload.token);
-        window.localStorage.setItem("auth-username", action.payload.username);
-      }
+    },
+    setAuthChecking(state) {
+      state.status = "checking";
+      state.error = null;
     },
     clearAuth(state) {
-      state.token = null;
+      state.status = "unauthenticated";
       state.username = null;
       state.error = null;
-      if (typeof window !== "undefined") {
-        window.localStorage.removeItem("auth-token");
-        window.localStorage.removeItem("auth-username");
-      }
     },
     setAuthError(state, action: PayloadAction<string | null>) {
       state.error = action.payload;
@@ -46,5 +36,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { setAuth, clearAuth, setAuthError } = authSlice.actions;
+export const { setAuth, setAuthChecking, clearAuth, setAuthError } =
+  authSlice.actions;
 export default authSlice.reducer;

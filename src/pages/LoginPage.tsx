@@ -18,7 +18,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export function LoginPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const token = useSelector((state: RootState) => state.auth.token);
+  const status = useSelector((state: RootState) => state.auth.status);
   const [login, { isLoading, error }] = useLoginMutation();
 
   const {
@@ -28,21 +28,16 @@ export function LoginPage() {
   } = useForm<LoginFormValues>({ resolver: zodResolver(loginSchema) });
 
   useEffect(() => {
-    if (token) {
+    if (status === "authenticated") {
       navigate("/users", { replace: true });
     }
-  }, [navigate, token]);
+  }, [navigate, status]);
 
   const onSubmit = async (values: LoginFormValues) => {
     dispatch(setAuthError(null));
     try {
-      const response = await login(values).unwrap();
-      const tokenValue =
-        response.access_token || response.token || response.accessToken;
-      if (!tokenValue) {
-        throw new Error("The server did not return an access token.");
-      }
-      dispatch(setAuth({ token: tokenValue, username: values.username }));
+      await login(values).unwrap();
+      dispatch(setAuth({ username: values.username }));
       navigate("/users", { replace: true });
     } catch {
       dispatch(setAuthError("Unable to sign in."));
