@@ -62,7 +62,7 @@ All components must be functional. No class components.
 
 | Layer                 | Tool                    | When to use                          |
 | --------------------- | ----------------------- | ------------------------------------ |
-| Global app state      | Redux Toolkit slice     | Auth token, websocket status         |
+| Global app state      | Redux Toolkit slice     | Auth status, websocket status        |
 | Server data / caching | RTK Query (`createApi`) | All API calls                        |
 | Local UI state        | `useState`              | Component-scoped toggles, form state |
 
@@ -122,38 +122,33 @@ Open **http://localhost:3000** (container) or **http://localhost:5173** (dev ser
 - **Client ID**: `demo-client-id`
 - **Client Secret**: `demo-client-secret`
 
-On success you are redirected to `/users` and a Bearer token is stored in Redux state and `localStorage`.
+On success you are redirected to `/users`, and the backend sets an `HttpOnly` session cookie. The client stores only auth status in Redux (no token persistence in browser storage).
 
-Alternatively, obtain a token directly with curl:
+Alternatively, establish a session directly with curl:
 
 ```bash
 curl -X POST http://localhost:3000/oauth/token \
   -H "Content-Type: application/x-www-form-urlencoded" \
+  -c cookies.txt \
   -d "grant_type=client_credentials" \
   -d "client_id=demo-client-id" \
   -d "client_secret=demo-client-secret"
 ```
 
-Copy the `accessToken` value from the response.
+This captures session cookies into `cookies.txt` for later requests.
 
 ---
 
 ### 📡 Step 2: Verify the WebSocket Connection
 
-After logging in, the app automatically opens a WebSocket connection authenticated via the `Sec-WebSocket-Protocol` subprotocol header. The **NotificationBanner** component at the top of the page shows the current socket status (`idle`, `connecting`, `open`, `closed`, or `error`) and the latest pushed message.
+After logging in, the app automatically opens a WebSocket connection authenticated via the browser session cookie. The **NotificationBanner** component at the top of the page shows the current socket status (`idle`, `connecting`, `open`, `closed`, or `error`) and the latest pushed message.
 
 To test the socket manually from the command line:
 
-Using `wscat`:
+Using `websocat` with a session cookie copied from browser devtools:
 
 ```bash
-wscat -c ws://localhost:3000/ws -s "access_token, YOUR_COPIED_JWT_ACCESS_TOKEN_HERE"
-```
-
-Using `websocat`:
-
-```bash
-websocat ws://localhost:3000/ws --header "Sec-WebSocket-Protocol: access_token, YOUR_COPIED_JWT_ACCESS_TOKEN_HERE"
+websocat ws://localhost:3000/ws --header "Cookie: SESSION_COOKIE_NAME=SESSION_COOKIE_VALUE"
 ```
 
 Send a test event:
@@ -174,7 +169,7 @@ Use the **List Users**, **Add User**, and **Edit** / **Delete** controls in the 
 
 ```bash
 curl -X GET http://localhost:3000/api/users \
-  -H "Authorization: Bearer YOUR_COPIED_JWT_ACCESS_TOKEN_HERE" \
+  -b cookies.txt \
   -w "\n"
 ```
 
@@ -194,7 +189,7 @@ Expected: `401 Unauthorized`.
 ```bash
 curl -X POST http://localhost:3000/api/users \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_COPIED_JWT_ACCESS_TOKEN_HERE" \
+  -b cookies.txt \
   -d '{"name": "Alice Developer", "email": "alice.dev@example.com"}' \
   -w "\n"
 ```
@@ -205,7 +200,7 @@ Expected: `201 Created`. The active WebSocket listener will emit a `user_created
 
 ```bash
 curl -X GET http://localhost:3000/api/users/1 \
-  -H "Authorization: Bearer YOUR_COPIED_JWT_ACCESS_TOKEN_HERE" \
+  -b cookies.txt \
   -w "\n"
 ```
 
@@ -214,7 +209,7 @@ curl -X GET http://localhost:3000/api/users/1 \
 ```bash
 curl -X PUT http://localhost:3000/api/users/1 \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_COPIED_JWT_ACCESS_TOKEN_HERE" \
+  -b cookies.txt \
   -d '{"name": "Alice Smith", "email": "alice.smith@example.com"}' \
   -w "\n"
 ```
@@ -223,7 +218,7 @@ curl -X PUT http://localhost:3000/api/users/1 \
 
 ```bash
 curl -X DELETE http://localhost:3000/api/users/1 \
-  -H "Authorization: Bearer YOUR_COPIED_JWT_ACCESS_TOKEN_HERE" \
+  -b cookies.txt \
   -w "\n"
 ```
 
@@ -231,13 +226,13 @@ curl -X DELETE http://localhost:3000/api/users/1 \
 
 ### 🔒 Step 4: Smoke Test Logout
 
-Click **Logout** in the navigation bar. The app dispatches `clearAuth`, wipes the token from `localStorage`, calls `POST /oauth/logout`, and redirects to `/login`. The WebSocket connection closes automatically because the token is cleared.
+Click **Logout** in the navigation bar. The app dispatches `clearAuth`, calls `POST /oauth/logout`, and redirects to `/login`. The WebSocket connection closes automatically when auth becomes unauthenticated.
 
 Verify the session is terminated:
 
 ```bash
 curl -X GET http://localhost:3000/api/users \
-  -H "Authorization: Bearer YOUR_CLEARED_TOKEN_HERE" \
+  -b cookies.txt \
   -w "\n"
 ```
 
