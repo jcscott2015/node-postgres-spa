@@ -1,0 +1,78 @@
+flowchart TD
+    classDef shell fill:#e2e8f0,stroke:#334155,stroke-width:1.5px,color:#0f172a
+    classDef public fill:#dbeafe,stroke:#2563eb,stroke-width:1.5px,color:#0f172a
+    classDef protected fill:#dcfce7,stroke:#16a34a,stroke-width:1.5px,color:#0f172a
+    classDef state fill:#fef3c7,stroke:#d97706,stroke-width:1.5px,color:#0f172a
+    classDef async fill:#fee2e2,stroke:#dc2626,stroke-width:1.5px,color:#0f172a
+
+    Entry[Browser loads SPA] --> AppShell
+
+    subgraph AppShell[App shell]
+        Topbar[Top bar<br/>Title: OAuth user manager]
+        Nav[Auth-only nav links<br/>List users, Add user, Logout]
+        Content[Main content area]
+        Banner[Notification banner<br/>Latest websocket message<br/>Socket status + error]
+        Topbar --> Nav
+        Topbar --> Content
+    end
+
+    AppShell --> Router
+    Router{Current route}
+
+    subgraph PublicRoutes[Public routes]
+        Login[Login page<br/>Username + password form<br/>Validation + sign-in button]
+        Callback[Callback page<br/>Loading spinner while OAuth completes]
+    end
+
+    subgraph ProtectedArea[Protected area]
+        Gate[ProtectedRoute<br/>Checking session -> loading card<br/>Unauthenticated -> redirect to login]
+        Users[Users page<br/>User list, empty/loading/error states<br/>Edit and delete actions]
+        UserForm[User form page<br/>Add or edit user<br/>Name + email validation]
+        Logout[Logout route<br/>Signs out, then redirects]
+        Gate --> Users
+        Gate --> UserForm
+        Gate --> Logout
+    end
+
+    Router -->|/login| Login
+    Router -->|/callback| Callback
+    Router -->|/users, /users/new,<br/>/users/:id/edit, /logout| Gate
+    Router -->|unknown route| Redirect[Redirect to /login or /users]
+
+    Login -->|success| Users
+    Login -->|validation or auth error| Login
+    Callback -->|code exchange succeeds| Users
+    Callback -->|missing code or exchange fails| Login
+    Users -->|Add user| UserForm
+    Users -->|Edit user| UserForm
+    UserForm -->|Save or cancel| Users
+    Users -->|Logout link| Logout
+    Logout --> Login
+
+    subgraph AppState[Shared UI state and side effects]
+        AuthState[Auth state<br/>checking, authenticated, unauthenticated]
+        SessionCheck[Session polling query<br/>used to confirm existing login]
+        Socket[WebSocket connection<br/>open, message, error, close]
+    end
+
+    AuthState --> Nav
+    AuthState --> Gate
+    AuthState -. hides banner on /login .-> Banner
+    SessionCheck --> AuthState
+    Socket --> Banner
+    AuthState --> Socket
+
+    AppShell:::shell
+    Topbar:::shell
+    Nav:::shell
+    Content:::shell
+    Banner:::async
+    Login:::public
+    Callback:::public
+    Gate:::protected
+    Users:::protected
+    UserForm:::protected
+    Logout:::protected
+    AuthState:::state
+    SessionCheck:::state
+    Socket:::async
