@@ -13,6 +13,7 @@ We use pnpm for package management. The React app proxies API and WebSocket traf
 - Node.js (v20 or higher)
 - pnpm
 - Docker & Docker Compose (for running the full stack)
+- [node-postgres-api](https://github.com/jcscott2015/node-postgres-api) running in its container
 
 ## Step 1: Clone and Install Dependencies
 
