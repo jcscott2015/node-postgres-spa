@@ -1,6 +1,6 @@
 # node-postgres-spa
 
-OAuth2-protected React UI for managing user records, with real-time WebSocket updates.
+OAuth2-protected React UI for managing user records, with real-time WebSocket updates. Uses [node-postgres-api](https://github.com/jcscott2015/node-postgres-api), which should be running in a container first.
 
 Built with React 19, Vite, Redux Toolkit + RTK Query, React Hook Form + Zod, and React Router. Deployed as a static asset bundle served by Nginx inside a Chainguard container.
 
@@ -53,6 +53,7 @@ Built with React 19, Vite, Redux Toolkit + RTK Query, React Hook Form + Zod, and
 - Node.js v20+
 - pnpm
 - Docker & Docker Compose (for the full stack)
+- **node-postgres-api** running in its container
 
 ### Install dependencies
 
